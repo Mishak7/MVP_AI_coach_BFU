@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ИИ тренажер русского языка</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🇷🇺 ИИ тренажер русского языка 🎯</h1>
+            <p>Выбери уровень сложности и начинай учиться!</p>
+        </header>
+
+        <main>
+            {% if not show_lessons and not show_lesson %}
+            <div class="levels">
+                <h2>Уровни сложности 📊</h2>
+                {% for level in levels %}
+                <a href="/level/{{ level.id }}" class="btn level-btn">
+                    <span class="emoji">{{ level.emoji }}</span>
+                    {{ level.name }}
+                </a>
+                {% endfor %}
+            </div>
+
+            {% elif show_lessons and not show_lesson %}
+            <div class="lessons">
+                <h2>Уроки уровня 📚</h2>
+                {% for lesson in lessons %}
+                <a href="/level/{{ current_level }}/lesson/{{ lesson.id }}" class="btn lesson-btn">
+                    <span class="emoji">{{ lesson.emoji }}</span>
+                    {{ lesson.name }}
+                </a>
+                {% endfor %}
+
+                <a href="/" class="btn back-btn">← Назад к уровням</a>
+            </div>
+
+            {% elif show_lesson %}
+            <div class="lesson-content">
+                <h2>{{ current_lesson.emoji }} {{ current_lesson.name }}</h2>
+                <div class="content">
+                    {{ current_lesson.content|safe }}
+                </div>
+
+                <!-- Блок для загрузки аудио -->
+                <div class="audio-upload">
+                    <h3>Проверка произношения 🎤</h3>
+                    <p>Загрузите аудиофайл с вашим произношением фразы:</p>
+                    <p class="phrase-to-pronounce">"Привет, как дела?"</p>
+
+                    <div class="upload-container">
+                        <input type="file" id="audioFile" accept="audio/*" class="file-input">
+                        <label for="audioFile" class="file-label">
+                            <span class="file-emoji">📁</span> Выбрать аудиофайл с компьютера
+                        </label>
+                        <button id="uploadBtn" class="upload-btn">Загрузить и проверить</button>
+                    </div>
+
+                    <!-- ТЕЛЕГРАМ РЕКОРДЕР -->
+                    <div class="telegram-recorder">
+                        <p>Или запиши голос прямо здесь:</p>
+                        <button onclick="recordVoice()" class="record-btn">🎤 Записать голос</button>
+                    </div>
+
+                    <div id="loading" class="loading" style="display: none;">
+                        <p>⏳ Анализируем произношение...</p>
+                    </div>
+
+                    <div id="result" class="result-container" style="display: none;">
+                        <h4>Результат проверки:</h4>
+                        <div class="score">
+                            Оценка: <span id="scoreValue">0</span>/100
+                        </div>
+                        <div class="feedback">
+                            <p>Обратная связь:</p>
+                            <p id="feedbackText"></p>
+                        </div>
+                    </div>
+
+                    <div id="error" class="error-container" style="display: none;">
+                        <p class="error-text"></p>
+                    </div>
+                </div>
+
+                <a href="/level/{{ current_level }}" class="btn back-btn">← Назад к урокам</a>
+            </div>
+            {% endif %}
+        </main>
+
+        <footer>
+            <p>Сделано с ❤️ для изучения русского языка</p>
+        </footer>
+    </div>
+
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+
+    <script>
+    function recordVoice() {
+        if (window.Telegram && Telegram.WebApp) {
+            Telegram.WebApp.recordAudio();
+        } else {
+            alert("Эта функция работает только в Telegram");
+        }
+    }
+
+    if (window.Telegram && Telegram.WebApp) {
+        Telegram.WebApp.onEvent('recordAudioReceived', (data) => {
+            console.log("Аудио записано!", data);
+            // Здесь отправка data.blob на сервер
+        });
+    }
+    </script>
+</body>
+</html>
